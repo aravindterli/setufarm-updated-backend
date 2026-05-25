@@ -15,7 +15,15 @@ async def create_supabase_schema():
         
     print(f"Connecting to database using URL: {db_url.split('@')[-1]}") # Hide credentials
     
-    engine = create_async_engine(db_url, echo=True)
+    from uuid import uuid4
+    engine = create_async_engine(
+        db_url, 
+        echo=True, 
+        connect_args={
+            "statement_cache_size": 0,
+            "prepared_statement_name_func": lambda: f"__asyncpg_{uuid4().hex}__",
+        }
+    )
     
     try:
         async with engine.begin() as conn:
