@@ -79,6 +79,7 @@ class OrderService:
             raise Exception("Order not found")
         order, crop_name = row
         order.crop_name = crop_name
+        order.delivery_address = order.delivery_address_text
         
         # Fetch requests
         from app.models.all_models import DriverRequest, User
@@ -95,17 +96,35 @@ class OrderService:
                 "status": req.status
             })
             
+        # Fetch buyer details
+        buyer_stmt = select(User).where(User.id == order.buyer_id)
+        buyer_res = await self.db.execute(buyer_stmt)
+        buyer = buyer_res.scalar_one_or_none()
+        if buyer:
+            order.buyer_name = buyer.name
+            order.buyer_phone = buyer.phone
+            order.buyer = {
+                "id": str(buyer.id),
+                "name": buyer.name,
+                "phone": buyer.phone,
+                "profile_photo": buyer.profile_photo
+            }
+
         # Fetch driver details if assigned
         if order.assigned_driver_id:
-            driver_stmt = select(User).where(User.id == order.assigned_driver_id)
+            driver_stmt = select(User, DriverProfile).outerjoin(DriverProfile, User.id == DriverProfile.user_id).where(User.id == order.assigned_driver_id)
             driver_res = await self.db.execute(driver_stmt)
-            driver = driver_res.scalar_one_or_none()
-            if driver:
+            driver_row = driver_res.first()
+            if driver_row:
+                driver, driver_profile = driver_row
+                order.driver_name = driver.name
                 order.assigned_driver = {
                     "id": str(driver.id),
                     "name": driver.name,
                     "phone": driver.phone,
-                    "profile_photo": driver.profile_photo
+                    "profile_photo": driver.profile_photo,
+                    "vehicle_type": driver_profile.vehicle_type if driver_profile else None,
+                    "vehicle_number": driver_profile.vehicle_number if driver_profile else None
                 }
             
         # Fetch farmer details
@@ -131,13 +150,14 @@ class OrderService:
 
     async def get_my_orders(self, user_id: str, role: str):
         print(f"Fetching orders for user: {user_id}, role: {role}")
+        from app.models.all_models import User
         if role == 'farmer':
-            stmt = select(Order, Product.crop_name).join(Product, Order.product_id == Product.id).where(
+            stmt = select(Order, Product.crop_name, User.name, User.phone).join(Product, Order.product_id == Product.id).outerjoin(User, Order.buyer_id == User.id).where(
                 Order.farmer_id == user_id,
                 Order.status != "draft"  # Hide drafts from farmer
             ).order_by(desc(Order.created_at))
         else:
-            stmt = select(Order, Product.crop_name).join(Product, Order.product_id == Product.id).where(
+            stmt = select(Order, Product.crop_name, User.name, User.phone).join(Product, Order.product_id == Product.id).outerjoin(User, Order.buyer_id == User.id).where(
                 Order.buyer_id == user_id
             ).order_by(desc(Order.created_at))
             
@@ -146,9 +166,12 @@ class OrderService:
         print(f"Found {len(all_rows)} orders")
         orders = []
         for row in all_rows:
-            order, crop_name = row
-            # Attach crop_name to order object for Pydantic
+            order, crop_name, buyer_name, buyer_phone = row
+            # Attach crop_name and buyer info to order object for Pydantic
             order.crop_name = crop_name
+            order.buyer_name = buyer_name
+            order.buyer_phone = buyer_phone
+            order.delivery_address = order.delivery_address_text
             orders.append(order)
         return orders
 

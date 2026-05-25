@@ -103,6 +103,7 @@ class Product(Base):
     available_till = Column(DateTime)
     is_organic = Column(Boolean, default=False)
     status = Column(String(20), default='active')
+    category = Column(String(50))
     lat = Column(DECIMAL(10, 8))
     lng = Column(DECIMAL(11, 8))
     village = Column(String(100))

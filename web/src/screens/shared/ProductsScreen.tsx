@@ -1,7 +1,8 @@
-import React, { useEffect, useState } from 'react';
+import { useEffect, useState } from 'react';
 import { useQuery } from '@tanstack/react-query';
 import { Link } from 'react-router-dom';
 import '../../components/Commerce.css';
+import logo from '../../assets/logo.png';
 
 const DEFAULT_LAT = 17.3850;
 const DEFAULT_LNG = 78.4867;
@@ -138,12 +139,8 @@ export default function ProductsScreen() {
       {/* ── Navbar ─────────────────────────────────────────── */}
       <nav className="navbar">
         <div className="navbar-inner">
-          <Link to="/" className="navbar-logo">
-            <div className="logo-mark">🌾</div>
-            <div>
-              <span className="logo-wordmark">setufarm</span>
-              <span className="logo-sup">farm to table</span>
-            </div>
+          <Link to="/" className="navbar-logo" style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
+            <img src={logo} alt="SetuFarm Logo" style={{ height: '36px', width: 'auto', objectFit: 'contain' }} />
           </Link>
 
           <div className="navbar-search">
@@ -261,7 +258,9 @@ export default function ProductsScreen() {
 
       {/* ── Footer ────────────────────────────────────────── */}
       <footer className="footer">
-        <div className="footer-logo">🌾 setufarm</div>
+        <div className="footer-logo" style={{ display: 'flex', justifyContent: 'center', marginBottom: '8px' }}>
+          <img src={logo} alt="SetuFarm Logo" style={{ height: '28px', width: 'auto', objectFit: 'contain', opacity: 0.75 }} />
+        </div>
         <p className="footer-tagline">connecting farmers directly with buyers · © 2026 setufarm</p>
       </footer>
     </>

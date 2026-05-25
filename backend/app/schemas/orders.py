@@ -20,6 +20,14 @@ class DriverInfoResponse(BaseModel):
     name: str
     phone: str
     profile_photo: Optional[str] = None
+    vehicle_type: Optional[str] = None
+    vehicle_number: Optional[str] = None
+
+class BuyerInfoResponse(BaseModel):
+    id: UUID
+    name: str
+    phone: str
+    profile_photo: Optional[str] = None
 
 class FarmerInfoResponse(BaseModel):
     id: UUID
@@ -42,7 +50,11 @@ class OrderResponse(BaseModel):
     total_amount: float
     delivery_type: Optional[str] = None
     delivery_address_text: Optional[str] = None
+    delivery_address: Optional[str] = None
     farmer: Optional[FarmerInfoResponse] = None
+    buyer_name: Optional[str] = None
+    buyer_phone: Optional[str] = None
+    buyer: Optional[BuyerInfoResponse] = None
     assigned_driver_id: Optional[UUID] = None
     assigned_driver: Optional[DriverInfoResponse] = None
     pickup_otp: Optional[str] = None
