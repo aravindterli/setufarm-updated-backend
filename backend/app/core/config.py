@@ -8,6 +8,8 @@ class Settings(BaseSettings):
     # Database
     DATABASE_URL: str
     ASYNC_DATABASE_URL: str
+    DIRECT_URL: str | None = None
+    ASYNC_DIRECT_URL: str | None = None
 
     # JWT
     SECRET_KEY: str
@@ -15,18 +17,18 @@ class Settings(BaseSettings):
     ACCESS_TOKEN_EXPIRE_MINUTES: int = 43200  # 30 days
 
     # AWS S3
-    AWS_ACCESS_KEY: str
-    AWS_SECRET_KEY: str
-    AWS_BUCKET_NAME: str
+    AWS_ACCESS_KEY: str = ""
+    AWS_SECRET_KEY: str = ""
+    AWS_BUCKET_NAME: str = ""
     AWS_REGION: str = "ap-south-1"
 
     # Razorpay
-    RAZORPAY_KEY_ID: str
-    RAZORPAY_KEY_SECRET: str
+    RAZORPAY_KEY_ID: str = ""
+    RAZORPAY_KEY_SECRET: str = ""
 
     # SMS (MSG91)
-    MSG91_API_KEY: str
-    MSG91_TEMPLATE_ID: str
+    MSG91_API_KEY: str = ""
+    MSG91_TEMPLATE_ID: str = ""
 
     # Redis
     REDIS_URL: str = "redis://redis:6379"
@@ -40,6 +42,10 @@ class Settings(BaseSettings):
     EMAILS_FROM_NAME: str = "SetuFarm"
 
 
-    model_config = SettingsConfigDict(env_file=".env")
+    # Local Database for migration
+    LOCAL_DATABASE_URL: str | None = None
+    LOCAL_ASYNC_DATABASE_URL: str | None = None
+
+    model_config = SettingsConfigDict(env_file=".env", extra="ignore")
 
 settings = Settings()

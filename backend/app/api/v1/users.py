@@ -183,10 +183,10 @@ async def get_driver_dashboard(
             "created_at": order.created_at.isoformat()
         })
 
-    # My Active Deliveries (In Transit)
+    # My Active Deliveries (Accepted & Ready for Pickup, or In Transit)
     active_stmt = select(Order, Product.crop_name).join(Product, Order.product_id == Product.id).where(
-        Order.delivery_earned_by == current_user.id,
-        Order.status == 'in_transit'
+        Order.assigned_driver_id == current_user.id,
+        Order.status.in_(['ready_for_pickup', 'in_transit'])
     )
     active_res = await db.execute(active_stmt)
     

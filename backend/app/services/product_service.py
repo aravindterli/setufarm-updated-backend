@@ -4,6 +4,32 @@ import base64
 from app.models.all_models import Product, User, FarmerProfile, ProductPhoto
 from app.core.utils import haversine_distance
 
+def get_crop_category(crop_name: str) -> str:
+    name_lower = crop_name.lower()
+    # Check leafy greens first to avoid matching general vegetables
+    for word in ['leafy', 'spinach', 'palak', 'coriander leaves', 'mint', 'methi', 'lettuce', 'green']:
+        if word in name_lower:
+            return 'Leafy Greens'
+    for word in ['turmeric', 'cardamom', 'clove', 'cinnamon', 'cumin', 'spice', 'cloves', 'chilli powder']:
+        if word in name_lower:
+            return 'Spices'
+    for word in ['tomato', 'potato', 'onion', 'carrot', 'cucumber', 'cabbage', 'cauliflower', 'brinjal', 'eggplant', 'okra', 'beetroot', 'capsicum', 'pumpkin', 'radish', 'garlic', 'ginger', 'chilli', 'chili', 'ladies finger', 'brinjal']:
+        if word in name_lower:
+            return 'Vegetables'
+    for word in ['apple', 'banana', 'mango', 'orange', 'grape', 'papaya', 'watermelon', 'pomegranate', 'guava', 'pineapple', 'lemon', 'pear', 'peach', 'plum']:
+        if word in name_lower:
+            return 'Fruits'
+    for word in ['rice', 'wheat', 'corn', 'maize', 'barley', 'millet', 'ragi', 'jowar', 'paddy', 'grain', 'oats']:
+        if word in name_lower:
+            return 'Grains'
+    for word in ['gram', 'chickpea', 'chana', 'dal', 'lentil', 'pulse', 'soy', 'urad', 'moong', 'toor']:
+        if word in name_lower:
+            return 'Pulses'
+    for word in ['sunflower', 'mustard', 'groundnut', 'peanut', 'soybean', 'sesame', 'oilseed', 'coconut', 'castor']:
+        if word in name_lower:
+            return 'Oilseeds'
+    return 'Grains'
+
 class ProductService:
     def __init__(self, db):
         self.db = db
@@ -45,7 +71,8 @@ class ProductService:
             "village": product.village,
             "district": product.district,
             "farmer": farmer_info,
-            "distance_km": distance_km
+            "distance_km": distance_km,
+            "category": product.category or get_crop_category(product.crop_name)
         }
 
 
@@ -58,6 +85,7 @@ class ProductService:
         new_product = Product(
             farmer_id=user_id,
             crop_name=product_data.crop_name,
+            category=product_data.category or get_crop_category(product_data.crop_name),
             quantity_kg=product_data.quantity_kg,
             price_per_kg=product_data.price_per_kg,
             status="active",
@@ -108,8 +136,6 @@ class ProductService:
         ).where(Product.status == "active")
         
         # Add spatial filters if needed
-        if crop_type:
-            stmt = stmt.where(Product.crop_name == crop_type)
         if min_price:
             stmt = stmt.where(Product.price_per_kg >= min_price)
         if max_price:
@@ -117,6 +143,11 @@ class ProductService:
             
         res = await self.db.execute(stmt)
         products = res.scalars().unique().all()
+        
+        # Filter by category if crop_type is specified
+        if crop_type:
+            products = [p for p in products if (p.category or get_crop_category(p.crop_name)) == crop_type]
+            
         return {"products": [self._serialize_product(p, lat, lng) for p in products]}
 
     async def get_market_price(self, crop_name, district):
