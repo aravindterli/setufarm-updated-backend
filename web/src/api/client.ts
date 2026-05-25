@@ -1,6 +1,6 @@
 import axios from 'axios';
 
-const BASE_URL = (import.meta as any).env?.VITE_API_URL || 'http://localhost:8000/api/v1';
+const BASE_URL = (import.meta as any).env?.VITE_API_URL || 'https://setufarm-updated-backend-1.onrender.com/api/v1';
 
 const apiClient = axios.create({
   baseURL: BASE_URL,
