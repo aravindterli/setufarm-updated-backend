@@ -6,7 +6,7 @@ import logo from '../../assets/logo.png';
 
 const DEFAULT_LAT = 17.3850;
 const DEFAULT_LNG = 78.4867;
-const API_BASE = import.meta.env.VITE_API_URL || 'http://localhost:8000/api/v1';
+const API_BASE = import.meta.env.VITE_API_URL || 'https://setufarm-updated-backend-1.onrender.com/api/v1';
 
 const CATEGORIES = [
   { label: 'all', icon: '🌾', value: '' },
